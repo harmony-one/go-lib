@@ -9,7 +9,6 @@ harmony-one/harmony
 )
 
 for dep in "${deps[@]}"; do
-  commit=$(curl -Ssl https://api.github.com/repos/${dep}/commits/master | jq '.sha' | tr -d '"')
-  echo "Updating dependency ${dep} to commit ${commit}"
-  go get -u github.com/${dep}@${commit}
+  echo "Updating dependency ${dep} to latest master"
+  go get -u github.com/${dep}@master
 done
