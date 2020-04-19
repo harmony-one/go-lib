@@ -51,12 +51,20 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 		return nil, errors.New("keystore account can't be nil - please make sure the account you want to use exists in the keystore")
 	}
 
-	tx, err := generateTransaction(fromAddress, fromShardID, toAddress, toShardID, amount, gasLimit, gasPrice, nonce, inputData)
-	if err != nil {
-		return nil, err
-	}
-
-	signedTx, err := signTransaction(keystore, account, tx, chain.Value)
+	signedTx, err := GenerateAndSignTransaction(
+		fromAddress,
+		fromShardID,
+		toAddress,
+		toShardID,
+		amount,
+		gasLimit,
+		gasPrice,
+		nonce,
+		inputData,
+		keystore,
+		account,
+		chain,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +102,114 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 	result["transactionHash"] = receiptHash
 
 	return result, nil
+}
+
+// GenerateAndSignTransaction - generates and signs a transaction based on the supplied tx params and keystore/account
+func GenerateAndSignTransaction(
+	fromAddress string,
+	fromShardID uint32,
+	toAddress string,
+	toShardID uint32,
+	amount numeric.Dec,
+	gasLimit int64,
+	gasPrice numeric.Dec,
+	nonce uint64,
+	inputData string,
+	keystore *keystore.KeyStore,
+	account *accounts.Account,
+	chain *common.ChainID,
+) (tx *types.Transaction, err error) {
+	generatedTx, err := GenerateTransaction(fromAddress, fromShardID, toAddress, toShardID, amount, gasLimit, gasPrice, nonce, inputData)
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err = SignTransaction(keystore, account, generatedTx, chain.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
+}
+
+// GenerateTransaction - generate a new transaction
+func GenerateTransaction(
+	fromAddress string,
+	fromShardID uint32,
+	toAddress string,
+	toShardID uint32,
+	amount numeric.Dec,
+	gasLimit int64,
+	gasPrice numeric.Dec,
+	nonce uint64,
+	inputData string,
+) (tx *transaction.Transaction, err error) {
+	calculatedGasLimit, err := CalculateGasLimit(gasLimit, inputData, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if network.Verbose {
+		fmt.Println(fmt.Sprintf("\n[Harmony SDK]: %s - Generating a new transaction:\n\tReceiver address: %s\n\tFrom shard: %d\n\tTo shard: %d\n\tAmount: %f\n\tNonce: %d\n\tGas limit: %d\n\tGas price: %f\n\tData length (bytes): %d\n",
+			time.Now().Format(network.LoggingTimeFormat),
+			toAddress,
+			fromShardID,
+			toShardID,
+			amount,
+			nonce,
+			calculatedGasLimit,
+			gasPrice,
+			len(inputData)),
+		)
+	}
+
+	tx = transaction.NewTransaction(
+		nonce,
+		calculatedGasLimit,
+		address.Parse(toAddress),
+		fromShardID,
+		toShardID,
+		amount.Mul(OneAsDec),
+		gasPrice.Mul(NanoAsDec),
+		[]byte(inputData),
+	)
+
+	return tx, nil
+}
+
+// SignTransaction - signs a transaction using a given keystore / account
+func SignTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx *transaction.Transaction, chainID *big.Int) (*types.Transaction, error) {
+	signedTransaction, err := keystore.SignTx(*account, tx, chainID)
+	if err != nil {
+		return nil, err
+	}
+
+	return signedTransaction, nil
+}
+
+// EncodeSignature - RLP encodes a given transaction signature as a hex signature
+func EncodeSignature(tx interface{}) (*string, error) {
+	enc, err := rlp.EncodeToBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	hexSignature := hexutil.Encode(enc)
+	signature := &hexSignature
+
+	return signature, nil
+}
+
+// SendRawTransaction - sends a raw signed transaction via RPC
+func SendRawTransaction(rpcClient *goSdkRPC.HTTPMessenger, signature *string) (interface{}, error) {
+	reply, err := rpcClient.SendRPC(goSdkRPC.Method.SendRawTransaction, ParamsWrapper{signature})
+	if err != nil {
+		return nil, err
+	}
+
+	receiptHash, _ := reply["result"]
+
+	return receiptHash, nil
 }
 
 // WaitForTxConfirmation - waits a given amount of seconds defined by confirmationWaitTime to try to receive a finalized transaction
@@ -152,40 +268,6 @@ func handleTransactionError(receiptHash string, failures []rpc.Failure) error {
 	return nil
 }
 
-func generateTransaction(fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string) (tx *transaction.Transaction, err error) {
-	calculatedGasLimit, err := CalculateGasLimit(gasLimit, inputData, false)
-	if err != nil {
-		return nil, err
-	}
-
-	if network.Verbose {
-		fmt.Println(fmt.Sprintf("\n[Harmony SDK]: %s - Generating a new transaction:\n\tReceiver address: %s\n\tFrom shard: %d\n\tTo shard: %d\n\tAmount: %f\n\tNonce: %d\n\tGas limit: %d\n\tGas price: %f\n\tData length (bytes): %d\n",
-			time.Now().Format(network.LoggingTimeFormat),
-			toAddress,
-			fromShardID,
-			toShardID,
-			amount,
-			nonce,
-			calculatedGasLimit,
-			gasPrice,
-			len(inputData)),
-		)
-	}
-
-	tx = transaction.NewTransaction(
-		nonce,
-		calculatedGasLimit,
-		address.Parse(toAddress),
-		fromShardID,
-		toShardID,
-		amount.Mul(OneAsDec),
-		gasPrice.Mul(NanoAsDec),
-		[]byte(inputData),
-	)
-
-	return tx, nil
-}
-
 // CalculateGasLimit - calculates the proper gas limit for a given gas limit and input data
 func CalculateGasLimit(gasLimit int64, inputData string, isValidatorCreation bool) (calculatedGasLimit uint64, err error) {
 	// -1 means that the gas limit has not been specified by the user and that it should be automatically calculated based on the tx data
@@ -218,40 +300,6 @@ func CalculateGasLimit(gasLimit int64, inputData string, isValidatorCreation boo
 func BumpGasPrice(gasPrice numeric.Dec) numeric.Dec {
 	//return gasPrice.Add(numeric.NewDec(1).Quo(OneAsDec))
 	return gasPrice.Mul(numeric.NewDec(100 + int64(core.DefaultTxPoolConfig.PriceBump)).Quo(numeric.NewDec(100)))
-}
-
-func signTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx *transaction.Transaction, chainID *big.Int) (*types.Transaction, error) {
-	signedTransaction, err := keystore.SignTx(*account, tx, chainID)
-	if err != nil {
-		return nil, err
-	}
-
-	return signedTransaction, nil
-}
-
-// EncodeSignature - encodes a given transaction signature as a hex signature
-func EncodeSignature(tx interface{}) (*string, error) {
-	enc, err := rlp.EncodeToBytes(tx)
-	if err != nil {
-		return nil, err
-	}
-
-	hexSignature := hexutil.Encode(enc)
-	signature := &hexSignature
-
-	return signature, nil
-}
-
-// SendRawTransaction - sends a raw signed transaction via RPC
-func SendRawTransaction(rpcClient *goSdkRPC.HTTPMessenger, signature *string) (interface{}, error) {
-	reply, err := rpcClient.SendRPC(goSdkRPC.Method.SendRawTransaction, ParamsWrapper{signature})
-	if err != nil {
-		return nil, err
-	}
-
-	receiptHash, _ := reply["result"]
-
-	return receiptHash, nil
 }
 
 // GetTransactionReceipt - retrieves the transaction info/data for a transaction
