@@ -52,6 +52,9 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 	}
 
 	signedTx, err := GenerateAndSignTransaction(
+		keystore,
+		account,
+		chain,
 		fromAddress,
 		fromShardID,
 		toAddress,
@@ -61,9 +64,6 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 		gasPrice,
 		nonce,
 		inputData,
-		keystore,
-		account,
-		chain,
 	)
 	if err != nil {
 		return nil, err
@@ -106,6 +106,9 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 
 // GenerateAndSignTransaction - generates and signs a transaction based on the supplied tx params and keystore/account
 func GenerateAndSignTransaction(
+	keystore *keystore.KeyStore,
+	account *accounts.Account,
+	chain *common.ChainID,
 	fromAddress string,
 	fromShardID uint32,
 	toAddress string,
@@ -115,9 +118,6 @@ func GenerateAndSignTransaction(
 	gasPrice numeric.Dec,
 	nonce uint64,
 	inputData string,
-	keystore *keystore.KeyStore,
-	account *accounts.Account,
-	chain *common.ChainID,
 ) (tx *types.Transaction, err error) {
 	generatedTx, err := GenerateTransaction(fromAddress, fromShardID, toAddress, toShardID, amount, gasLimit, gasPrice, nonce, inputData)
 	if err != nil {
