@@ -35,14 +35,14 @@ func GenerateNodeAddress(network string, mode string, shardID uint32) (node stri
 
 // NormalizedNetworkName - return a normalized network name
 func NormalizedNetworkName(network string) string {
-	switch network {
+	switch strings.ToLower(network) {
 	case "local", "localnet":
 		return "localnet"
 	case "dev", "devnet", "pga":
 		return "devnet"
-	case "staking", "openstaking", "os", "pangaea":
+	case "staking", "openstaking", "os", "ostn", "pangaea":
 		return "pangaea"
-	case "partner", "partnernet":
+	case "partner", "partnernet", "pstn":
 		return "partner"
 	case "stress", "stresstest", "stn", "stressnet":
 		return "stressnet"
