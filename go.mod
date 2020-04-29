@@ -8,7 +8,7 @@ require (
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/harmony-one/bls v0.0.7-0.20191214005344-88c23f91a8a9
 	github.com/harmony-one/go-sdk v1.1.1-0.20200421150312-4c244dda08e8
-	github.com/harmony-one/harmony v1.9.1-0.20200426062420-dbd813f9fbca
+	github.com/harmony-one/harmony v1.9.1-0.20200429014842-6bc602194c04
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 )
