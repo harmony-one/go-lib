@@ -27,32 +27,20 @@ type RPCError struct {
 
 // RPCValidatorResult - the actual result
 type RPCValidatorResult struct {
-	Validator      RPCValidator                  `json:"validator,omitempty" yaml:"validator,omitempty"`
-	SigningPercent RPCCurrentEpochSigningPercent `json:"current-epoch-signing-percent,omitempty" yaml:"current-epoch-signing-percent,omitempty"`
-	VotingPower    RPCCurrentEpochVotingPower    `json:"current-epoch-voting-power,omitempty" yaml:"current-epoch-voting-power,omitempty"`
+	CurrentEpochPerformance RPCCurrentEpochPerformance `json:"current-epoch-performance,omitempty" yaml:"current-epoch-performance,omitempty"`
+	Validator               RPCValidator               `json:"validator,omitempty" yaml:"validator,omitempty"`
+	CurrentlyInCommittee    bool                       `json:"currently-in-committee,omitempty" yaml:"currently-in-committee,omitempty"`
+	EposStatus              string                     `json:"epos-status,omitempty" yaml:"epos-status,omitempty"`
+	RawTotalDelegation      *big.Int                   `json:"total-delegation,omitempty" yaml:"total-delegation,omitempty"`
+	TotalDelegation         numeric.Dec                `json:"-" yaml:"-"`
 }
 
-// RPCCurrentEpochSigningPercent - the current epoch signing percentage
-type RPCCurrentEpochSigningPercent struct {
-	CurrentEpochSigned uint32 `json:"current-epoch-signed,omitempty" yaml:"current-epoch-signed,omitempty"`
-	CurrentEpochToSign uint32 `json:"current-epoch-to-sign,omitempty" yaml:"current-epoch-to-sign,omitempty"`
-
-	RawPercentage string      `json:"percentage,omitempty" yaml:"percentage,omitempty"`
-	Percentage    numeric.Dec `json:"-" yaml:"-"`
-}
-
-// RPCCurrentEpochVotingPower - the current epoch voting power
-type RPCCurrentEpochVotingPower struct {
-	RawEffectiveStake string      `json:"effective-stake,omitempty" yaml:"effective-stake,omitempty"`
-	EffectiveStake    numeric.Dec `json:"-" yaml:"-"`
-
-	ShardID uint32 `json:"shard-id,omitempty" yaml:"shard-id,omitempty"`
-
-	RawVotingPowerAdjusted string      `json:"voting-power-adjusted,omitempty" yaml:"voting-power-adjusted,omitempty"`
-	VotingPowerAdjusted    numeric.Dec `json:"-" yaml:"-"`
-
-	RawVotingPowerRaw string      `json:"voting-power-raw,omitempty" yaml:"voting-power-raw,omitempty"`
-	VotingPowerRaw    numeric.Dec `json:"-" yaml:"-"`
+// RPCCurrentEpochPerformance - the current epoch performance
+type RPCCurrentEpochPerformance struct {
+	CurrentEpochSigned               uint32      `json:"current-epoch-signed,omitempty" yaml:"current-epoch-signed,omitempty"`
+	CurrentEpochToSign               uint32      `json:"current-epoch-to-sign,omitempty" yaml:"current-epoch-to-sign,omitempty"`
+	RawCurrentEpochSigningPercentage string      `json:"current-epoch-signing-percentage,omitempty" yaml:"current-epoch-signing-percentage,omitempty"`
+	CurrentEpochSigningPercentage    numeric.Dec `json:"-" yaml:"-"`
 }
 
 // RPCValidator - the actual validator info
@@ -90,13 +78,16 @@ type RPCValidatorAvailability struct {
 
 // Initialize - initialize and convert values for a given RPCValidatorResult struct
 func (validatorResult *RPCValidatorResult) Initialize() error {
+	if validatorResult.RawTotalDelegation != nil {
+		decTotalDelegation := numeric.NewDecFromBigInt(validatorResult.RawTotalDelegation)
+		validatorResult.TotalDelegation = decTotalDelegation.Quo(numeric.NewDec(denominations.One))
+	}
+
 	if err := validatorResult.Validator.Initialize(); err != nil {
 		return err
 	}
-	if err := validatorResult.SigningPercent.Initialize(); err != nil {
-		return err
-	}
-	if err := validatorResult.VotingPower.Initialize(); err != nil {
+
+	if err := validatorResult.CurrentEpochPerformance.Initialize(); err != nil {
 		return err
 	}
 
@@ -151,42 +142,13 @@ func (validatorInfo *RPCValidator) Initialize() error {
 }
 
 // Initialize - initialize and convert values for a given RPCValidatorResult struct
-func (signingPercent *RPCCurrentEpochSigningPercent) Initialize() error {
-	if signingPercent.RawPercentage != "" {
-		decPercentage, err := common.NewDecFromString(signingPercent.RawPercentage)
+func (signingPercent *RPCCurrentEpochPerformance) Initialize() error {
+	if signingPercent.RawCurrentEpochSigningPercentage != "" {
+		decPercentage, err := common.NewDecFromString(signingPercent.RawCurrentEpochSigningPercentage)
 		if err != nil {
 			return errors.Wrapf(err, "SigningPercent: Percentage")
 		}
-		signingPercent.Percentage = decPercentage
-	}
-
-	return nil
-}
-
-// Initialize - initialize and convert values for a given RPCValidatorResult struct
-func (votingPower *RPCCurrentEpochVotingPower) Initialize() error {
-	if votingPower.RawEffectiveStake != "" {
-		decEffectiveStake, err := common.NewDecFromString(votingPower.RawEffectiveStake)
-		if err != nil {
-			return errors.Wrapf(err, "VotingPower: EffectiveStake")
-		}
-		votingPower.EffectiveStake = decEffectiveStake
-	}
-
-	if votingPower.RawVotingPowerAdjusted != "" {
-		decVotingPowerAdjusted, err := common.NewDecFromString(votingPower.RawVotingPowerAdjusted)
-		if err != nil {
-			return errors.Wrapf(err, "VotingPower: VotingPowerAdjusted")
-		}
-		votingPower.VotingPowerAdjusted = decVotingPowerAdjusted
-	}
-
-	if votingPower.RawVotingPowerRaw != "" {
-		decVotingPowerRaw, err := common.NewDecFromString(votingPower.RawVotingPowerRaw)
-		if err != nil {
-			return errors.Wrapf(err, "VotingPower: VotingPowerRaw")
-		}
-		votingPower.VotingPowerRaw = decVotingPowerRaw
+		signingPercent.CurrentEpochSigningPercentage = decPercentage
 	}
 
 	return nil
