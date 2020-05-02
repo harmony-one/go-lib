@@ -18,8 +18,8 @@ type DelegationInfoWrapper struct {
 // DelegationInfo - the actual delegation info
 type DelegationInfo struct {
 	Undelegations    []UndelegationInfo `json:"Undelegations,omitempty" yaml:"Undelegations,omitempty"`
-	DelegatorAddress string             `json:"delegator_address,omitempty" yaml:"delegator_address,omitempty"`
-	ValidatorAddress string             `json:"validator_address,omitempty" yaml:"validator_address,omitempty"`
+	DelegatorAddress string             `json:"delegator-address,omitempty" yaml:"delegator-address,omitempty"`
+	ValidatorAddress string             `json:"validator-address,omitempty" yaml:"validator-address,omitempty"`
 	RawAmount        string             `json:"amount,omitempty" yaml:"amount,omitempty"`
 	Amount           numeric.Dec        `json:"-" yaml:"-"`
 	RawReward        string             `json:"reward,omitempty" yaml:"reward,omitempty"`
