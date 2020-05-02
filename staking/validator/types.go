@@ -33,6 +33,7 @@ type RPCValidatorResult struct {
 	EposStatus              string                     `json:"epos-status,omitempty" yaml:"epos-status,omitempty"`
 	RawTotalDelegation      *big.Int                   `json:"total-delegation,omitempty" yaml:"total-delegation,omitempty"`
 	TotalDelegation         numeric.Dec                `json:"-" yaml:"-"`
+	Lifetime                RPCValidatorLifetime       `json:"lifetime,omitempty" yaml:"lifetime,omitempty"`
 }
 
 // RPCCurrentEpochPerformance - the current epoch performance
@@ -41,6 +42,23 @@ type RPCCurrentEpochPerformance struct {
 	CurrentEpochToSign               uint32      `json:"current-epoch-to-sign,omitempty" yaml:"current-epoch-to-sign,omitempty"`
 	RawCurrentEpochSigningPercentage string      `json:"current-epoch-signing-percentage,omitempty" yaml:"current-epoch-signing-percentage,omitempty"`
 	CurrentEpochSigningPercentage    numeric.Dec `json:"-" yaml:"-"`
+}
+
+// RPCValidatorLifetime - validator lifetime rewards
+type RPCValidatorLifetime struct {
+	RawAPR string      `json:"apr,omitempty" yaml:"apr,omitempty"`
+	APR    numeric.Dec `json:"-" yaml:"-"`
+
+	RawRewardAccumulated *big.Int    `json:"reward-accumulated,omitempty" yaml:"reward-accumulated,omitempty"`
+	RewardAccumulated    numeric.Dec `json:"-" yaml:"-"`
+
+	Blocks RPCValidatorBlockStatistics `json:"blocks,omitempty" yaml:"blocks,omitempty"`
+}
+
+// RPCValidatorBlockStatistics - validator block statistics
+type RPCValidatorBlockStatistics struct {
+	Signed int `json:"signed,omitempty" yaml:"signed,omitempty"`
+	ToSign int `json:"to-sign,omitempty" yaml:"to-sign,omitempty"`
 }
 
 // RPCValidator - the actual validator info
@@ -91,6 +109,10 @@ func (validatorResult *RPCValidatorResult) Initialize() error {
 		return err
 	}
 
+	if err := validatorResult.Lifetime.Initialize(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -130,25 +152,41 @@ func (validatorInfo *RPCValidator) Initialize() error {
 		validatorInfo.MaxRate = decMaxRate
 	}
 
-	if len(validatorInfo.Delegations) > 0 {
-		for _, del := range validatorInfo.Delegations {
-			if err := del.Initialize(); err != nil {
-				return err
-			}
+	delegations, err := delegation.InitializeDelegationInfos(validatorInfo.Delegations)
+	if err != nil {
+		return err
+	}
+	validatorInfo.Delegations = delegations
+
+	return nil
+}
+
+// Initialize - initialize and convert values for a given RPCValidatorResult struct
+func (epochPerformance *RPCCurrentEpochPerformance) Initialize() error {
+	if epochPerformance.RawCurrentEpochSigningPercentage != "" {
+		decPercentage, err := common.NewDecFromString(epochPerformance.RawCurrentEpochSigningPercentage)
+		if err != nil {
+			return errors.Wrapf(err, "EpochPerformance: CurrentEpochSigningPercentage")
 		}
+		epochPerformance.CurrentEpochSigningPercentage = decPercentage
 	}
 
 	return nil
 }
 
 // Initialize - initialize and convert values for a given RPCValidatorResult struct
-func (signingPercent *RPCCurrentEpochPerformance) Initialize() error {
-	if signingPercent.RawCurrentEpochSigningPercentage != "" {
-		decPercentage, err := common.NewDecFromString(signingPercent.RawCurrentEpochSigningPercentage)
+func (lifetime *RPCValidatorLifetime) Initialize() error {
+	if lifetime.RawAPR != "" {
+		decAPR, err := common.NewDecFromString(lifetime.RawAPR)
 		if err != nil {
-			return errors.Wrapf(err, "SigningPercent: Percentage")
+			return errors.Wrapf(err, "ValidatorLifetime: APR")
 		}
-		signingPercent.CurrentEpochSigningPercentage = decPercentage
+		lifetime.APR = decAPR
+	}
+
+	if lifetime.RawRewardAccumulated != nil {
+		decRewardAccumulated := numeric.NewDecFromBigInt(lifetime.RawRewardAccumulated)
+		lifetime.RewardAccumulated = decRewardAccumulated.Quo(numeric.NewDec(denominations.One))
 	}
 
 	return nil

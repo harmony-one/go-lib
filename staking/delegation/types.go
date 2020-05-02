@@ -1,9 +1,8 @@
 package delegation
 
 import (
-	"github.com/pkg/errors"
+	"math/big"
 
-	"github.com/harmony-one/go-sdk/pkg/common"
 	"github.com/harmony-one/harmony/common/denominations"
 	"github.com/harmony-one/harmony/numeric"
 )
@@ -19,56 +18,80 @@ type DelegationInfoWrapper struct {
 type DelegationInfo struct {
 	Undelegations    []UndelegationInfo `json:"Undelegations,omitempty" yaml:"Undelegations,omitempty"`
 	DelegatorAddress string             `json:"delegator-address,omitempty" yaml:"delegator-address,omitempty"`
-	ValidatorAddress string             `json:"validator-address,omitempty" yaml:"validator-address,omitempty"`
-	RawAmount        string             `json:"amount,omitempty" yaml:"amount,omitempty"`
+	RawAmount        *big.Int           `json:"amount,omitempty" yaml:"amount,omitempty"`
 	Amount           numeric.Dec        `json:"-" yaml:"-"`
-	RawReward        string             `json:"reward,omitempty" yaml:"reward,omitempty"`
+	RawReward        *big.Int           `json:"reward,omitempty" yaml:"reward,omitempty"`
 	Reward           numeric.Dec        `json:"-" yaml:"-"`
 }
 
 // UndelegationInfo - represents the info for a given undelegation
 type UndelegationInfo struct {
-	RawAmount string      `json:"Amount" yaml:"Amount"`
+	RawAmount *big.Int    `json:"Amount" yaml:"Amount"`
 	Amount    numeric.Dec `json:"-" yaml:"-"`
 	Epoch     int         `json:"Epoch" yaml:"Epoch"`
 }
 
+// InitializeDelegationInfos - initializes a DelegationInfo slice
+func InitializeDelegationInfos(delegations []DelegationInfo) ([]DelegationInfo, error) {
+	if len(delegations) > 0 {
+		rawDelegations := delegations
+		delegations = []DelegationInfo{}
+
+		for _, del := range rawDelegations {
+			if err := del.Initialize(); err != nil {
+				return delegations, err
+			}
+
+			delegations = append(delegations, del)
+		}
+	}
+
+	return delegations, nil
+}
+
 // Initialize - initialize and convert values for a given ValidatorInfo struct
 func (delegationInfo *DelegationInfo) Initialize() error {
-	if delegationInfo.RawAmount != "" {
-		decAmount, err := common.NewDecFromString(delegationInfo.RawAmount)
-		if err != nil {
-			return errors.Wrapf(err, "DelegationInfo: Amount")
-		}
+	if delegationInfo.RawAmount != nil {
+		decAmount := numeric.NewDecFromBigInt(delegationInfo.RawAmount)
 		delegationInfo.Amount = decAmount.Quo(numeric.NewDec(denominations.One))
 	}
 
-	if delegationInfo.RawReward != "" {
-		decReward, err := common.NewDecFromString(delegationInfo.RawReward)
-		if err != nil {
-			return errors.Wrapf(err, "DelegationInfo: Reward")
-		}
+	if delegationInfo.RawReward != nil {
+		decReward := numeric.NewDecFromBigInt(delegationInfo.RawReward)
 		delegationInfo.Reward = decReward.Quo(numeric.NewDec(denominations.One))
 	}
 
-	if len(delegationInfo.Undelegations) > 0 {
-		for _, undel := range delegationInfo.Undelegations {
-			if err := undel.Initialize(); err != nil {
-				return err
-			}
-		}
+	undelegations, err := InitializeUndelegationInfos(delegationInfo.Undelegations)
+	if err != nil {
+		return err
 	}
+	delegationInfo.Undelegations = undelegations
 
 	return nil
 }
 
+// InitializeUndelegationInfos - initializes an UndelegationInfo slice
+func InitializeUndelegationInfos(undelegations []UndelegationInfo) ([]UndelegationInfo, error) {
+	if len(undelegations) > 0 {
+		rawUndelegations := undelegations
+		undelegations = []UndelegationInfo{}
+
+		for _, undel := range rawUndelegations {
+			if err := undel.Initialize(); err != nil {
+				return undelegations, err
+			}
+
+			undelegations = append(undelegations, undel)
+		}
+	}
+
+	return undelegations, nil
+}
+
 // Initialize - initialize and convert values for a given ValidatorInfo struct
 func (undelegationInfo *UndelegationInfo) Initialize() error {
-	if undelegationInfo.RawAmount != "" {
-		decAmount, err := common.NewDecFromString(undelegationInfo.RawAmount)
-		if err != nil {
-			return errors.Wrapf(err, "UndelegationInfo: Amount")
-		}
+	if undelegationInfo.RawAmount != nil {
+		decAmount := numeric.NewDecFromBigInt(undelegationInfo.RawAmount)
 		undelegationInfo.Amount = decAmount.Quo(numeric.NewDec(denominations.One))
 	}
 	return nil
