@@ -11,6 +11,14 @@ import (
 	"github.com/harmony-one/harmony/numeric"
 )
 
+// RPCValidatorInfosWrapper - wrapper for the GetAllValidatorInformation RPC method
+type RPCValidatorInfosWrapper struct {
+	ID      string               `json:"id" yaml:"id"`
+	JSONRPC string               `json:"jsonrpc" yaml:"jsonrpc"`
+	Result  []RPCValidatorResult `json:"result" yaml:"result"`
+	Error   RPCError             `json:"error,omitempty" yaml:"error,omitempty"`
+}
+
 // RPCValidatorInfoWrapper - wrapper for the GetValidatorInformation RPC method
 type RPCValidatorInfoWrapper struct {
 	ID      string             `json:"id" yaml:"id"`

@@ -8,6 +8,63 @@ import (
 	goSdkRPC "github.com/harmony-one/go-sdk/pkg/rpc"
 )
 
+// AllInformation - retrieve all validator information
+func AllInformation(node string, fetchAllPages bool) ([]RPCValidatorResult, error) {
+	validatorResults := []RPCValidatorResult{}
+
+	if fetchAllPages {
+		page := 0
+		for {
+			validatorPagedResults, err := allInformationRequest(node, page)
+			if err != nil {
+				return validatorResults, err
+			}
+			if len(validatorPagedResults) > 0 {
+				validatorResults = append(validatorResults, validatorPagedResults...)
+			} else {
+				break
+			}
+			page++
+		}
+	} else {
+		validatorPagedResults, err := allInformationRequest(node, 0)
+		if err != nil {
+			return validatorResults, err
+		}
+		validatorResults = append(validatorResults, validatorPagedResults...)
+	}
+
+	return validatorResults, nil
+}
+
+func allInformationRequest(node string, page int) ([]RPCValidatorResult, error) {
+	response := RPCValidatorInfosWrapper{}
+	results := []RPCValidatorResult{}
+
+	bytes, err := goSdkRPC.RawRequest(goSdkRPC.Method.GetAllValidatorInformation, node, transactions.ParamsWrapper{page})
+	if err != nil {
+		return results, err
+	}
+
+	json.Unmarshal(bytes, &response)
+
+	if response.Error.Message != "" {
+		return results, fmt.Errorf("%s (%d)", response.Error.Message, response.Error.Code)
+	}
+
+	results = response.Result
+
+	validatorResults := []RPCValidatorResult{}
+	for _, result := range results {
+		if err := result.Initialize(); err != nil {
+			return results, nil
+		}
+		validatorResults = append(validatorResults, result)
+	}
+
+	return validatorResults, nil
+}
+
 // All - retrieves all validators
 func All(rpcClient *goSdkRPC.HTTPMessenger) (addresses []string, err error) {
 	reply, err := rpcClient.SendRPC(goSdkRPC.Method.GetAllValidatorAddresses, transactions.ParamsWrapper{})
@@ -15,7 +72,7 @@ func All(rpcClient *goSdkRPC.HTTPMessenger) (addresses []string, err error) {
 		return nil, err
 	}
 
-	return processResponse(reply), nil
+	return processAddressResponse(reply), nil
 }
 
 // Exists - checks if a given validator exists
@@ -39,7 +96,7 @@ func AllElected(rpcClient *goSdkRPC.HTTPMessenger) ([]string, error) {
 		return nil, err
 	}
 
-	return processResponse(reply), nil
+	return processAddressResponse(reply), nil
 }
 
 // ElectedExists - checks if a given elected validator exists
@@ -56,7 +113,7 @@ func ElectedExists(rpcClient *goSdkRPC.HTTPMessenger, validatorAddress string) b
 	return false
 }
 
-func processResponse(reply map[string]interface{}) (addresses []string) {
+func processAddressResponse(reply map[string]interface{}) (addresses []string) {
 	for _, address := range reply["result"].([]interface{}) {
 		addresses = append(addresses, address.(string))
 	}
