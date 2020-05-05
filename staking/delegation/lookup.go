@@ -3,7 +3,6 @@ package delegation
 import (
 	"encoding/json"
 
-	"github.com/harmony-one/go-lib/transactions"
 	goSdkRPC "github.com/harmony-one/go-sdk/pkg/rpc"
 )
 
@@ -21,7 +20,7 @@ func lookupDelegation(node string, rpcMethod string, address string) ([]Delegati
 	response := DelegationInfoWrapper{}
 	delegationInfo := []DelegationInfo{}
 
-	bytes, err := goSdkRPC.RawRequest(rpcMethod, node, transactions.ParamsWrapper{address})
+	bytes, err := goSdkRPC.RawRequest(rpcMethod, node, []interface{}{address})
 	if err != nil {
 		return delegationInfo, err
 	}

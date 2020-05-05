@@ -136,7 +136,7 @@ func SignStakingTransaction(keystore *keystore.KeyStore, account *accounts.Accou
 
 // SendRawStakingTransaction - send the raw staking tx to the RPC endpoint
 func SendRawStakingTransaction(rpcClient *rpc.HTTPMessenger, signature *string) (interface{}, error) {
-	reply, err := rpcClient.SendRPC(rpc.Method.SendRawStakingTransaction, transactions.ParamsWrapper{signature})
+	reply, err := rpcClient.SendRPC(rpc.Method.SendRawStakingTransaction, []interface{}{signature})
 	if err != nil {
 		return nil, err
 	}

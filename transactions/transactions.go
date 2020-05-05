@@ -42,9 +42,6 @@ var (
 	OneAsDec = numeric.NewDec(denominations.One)
 )
 
-// ParamsWrapper - interface to wrap RPC method params
-type ParamsWrapper []interface{}
-
 // SendTransaction - send transactions
 func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, confirmationWaitTime int) (map[string]interface{}, error) {
 	if keystore == nil || account == nil {
@@ -202,7 +199,7 @@ func EncodeSignature(tx interface{}) (*string, error) {
 
 // SendRawTransaction - sends a raw signed transaction via RPC
 func SendRawTransaction(rpcClient *goSdkRPC.HTTPMessenger, signature *string) (interface{}, error) {
-	reply, err := rpcClient.SendRPC(goSdkRPC.Method.SendRawTransaction, ParamsWrapper{signature})
+	reply, err := rpcClient.SendRPC(goSdkRPC.Method.SendRawTransaction, []interface{}{signature})
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +301,7 @@ func BumpGasPrice(gasPrice numeric.Dec) numeric.Dec {
 
 // GetTransactionReceipt - retrieves the transaction info/data for a transaction
 func GetTransactionReceipt(rpcClient *goSdkRPC.HTTPMessenger, receiptHash interface{}) (map[string]interface{}, error) {
-	response, err := rpcClient.SendRPC(goSdkRPC.Method.GetTransactionReceipt, ParamsWrapper{receiptHash})
+	response, err := rpcClient.SendRPC(goSdkRPC.Method.GetTransactionReceipt, []interface{}{receiptHash})
 	if err != nil {
 		return nil, err
 	}

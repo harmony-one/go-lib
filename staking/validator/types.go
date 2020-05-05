@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/harmony-one/go-lib/rpc"
 	"github.com/harmony-one/go-lib/staking/delegation"
 	"github.com/harmony-one/go-sdk/pkg/common"
 	"github.com/harmony-one/harmony/common/denominations"
@@ -16,7 +17,7 @@ type RPCValidatorInfosWrapper struct {
 	ID      string               `json:"id" yaml:"id"`
 	JSONRPC string               `json:"jsonrpc" yaml:"jsonrpc"`
 	Result  []RPCValidatorResult `json:"result" yaml:"result"`
-	Error   RPCError             `json:"error,omitempty" yaml:"error,omitempty"`
+	Error   rpc.RPCError         `json:"error,omitempty" yaml:"error,omitempty"`
 }
 
 // RPCValidatorInfoWrapper - wrapper for the GetValidatorInformation RPC method
@@ -24,13 +25,7 @@ type RPCValidatorInfoWrapper struct {
 	ID      string             `json:"id" yaml:"id"`
 	JSONRPC string             `json:"jsonrpc" yaml:"jsonrpc"`
 	Result  RPCValidatorResult `json:"result" yaml:"result"`
-	Error   RPCError           `json:"error,omitempty" yaml:"error,omitempty"`
-}
-
-// RPCError - error returned from the RPC endpoint
-type RPCError struct {
-	Code    int    `json:"code,omitempty" yaml:"code,omitempty"`
-	Message string `json:"message,omitempty" yaml:"message,omitempty"`
+	Error   rpc.RPCError       `json:"error,omitempty" yaml:"error,omitempty"`
 }
 
 // RPCValidatorResult - the actual result
@@ -74,6 +69,7 @@ type RPCValidator struct {
 	Address               string                      `json:"address,omitempty" yaml:"address,omitempty"`
 	BLSPublicKeys         []string                    `json:"bls-public-keys,omitempty" yaml:"bls-public-keys,omitempty"`
 	CreationHeight        uint32                      `json:"creation-height,omitempty" yaml:"creation-height,omitempty"`
+	UpdateHeight          uint32                      `json:"update-height,omitempty" yaml:"update-height,omitempty"`
 	RawMaxTotalDelegation *big.Int                    `json:"max-total-delegation,omitempty" yaml:"max-total-delegation,omitempty"`
 	MaxTotalDelegation    numeric.Dec                 `json:"-" yaml:"-"`
 	RawMinSelfDelegation  *big.Int                    `json:"min-self-delegation,omitempty" yaml:"min-self-delegation,omitempty"`
@@ -91,7 +87,6 @@ type RPCValidator struct {
 	MaxRate               numeric.Dec                 `json:"-" yaml:"-"`
 	EligibilityStatus     string                      `json:"epos-eligibility-status,omitempty" yaml:"epos-eligibility-status,omitempty"`
 	LastEpochInCommittee  uint32                      `json:"last-epoch-in-committee,omitempty" yaml:"last-epoch-in-committee,omitempty"`
-	UpdateHeight          uint32                      `json:"update-height,omitempty" yaml:"update-height,omitempty"`
 	Availability          RPCValidatorAvailability    `json:"availability,omitempty" yaml:"availability,omitempty"`
 	Delegations           []delegation.DelegationInfo `json:"delegations,omitempty" yaml:"delegations,omitempty"`
 }
