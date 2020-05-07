@@ -19,12 +19,18 @@ func IsLocalNode(node string) bool {
 
 // IdentifyNetworkChainID - identifies a chain id given a network name
 func IdentifyNetworkChainID(network string) (chain *common.ChainID, err error) {
-	return common.StringToChainID(NormalizedNetworkName(network))
+	network = NormalizedNetworkName(network)
+
+	if network == "dryrun" {
+		return &common.Chain.MainNet, nil
+	}
+
+	return common.StringToChainID(network)
 }
 
 // GenerateNodeAddress - generates a node address given a network, mode and a shardID
 func GenerateNodeAddress(network string, mode string, shardID uint32) (node string) {
-	node = ToNodeAddress(NormalizedNetworkName(network), shardID)
+	node = ToNodeAddress(network, shardID)
 
 	if strings.ToLower(mode) == "local" {
 		node = "http://localhost:9500"
@@ -46,10 +52,10 @@ func NormalizedNetworkName(network string) string {
 		return "partner"
 	case "stress", "stresstest", "stn", "stressnet":
 		return "stressnet"
-	case "mkeys", "multikeys", "multibls":
-		return "mkeys"
 	case "testnet", "p", "b":
 		return "testnet"
+	case "dryrun", "dry":
+		return "dryrun"
 	case "mainnet", "main", "t":
 		return "mainnet"
 	default:
@@ -74,8 +80,8 @@ func ToNodeAddress(network string, shardID uint32) (node string) {
 		node = fmt.Sprintf("https://api.s%d.stn.hmny.io", shardID)
 	case "testnet":
 		node = fmt.Sprintf("https://api.s%d.b.hmny.io", shardID)
-	case "mkeys":
-		node = fmt.Sprintf("https://api.s%d.b2.hmny.io", shardID)
+	case "dryrun":
+		node = fmt.Sprintf("https://api.s%d.dry.hmny.io", shardID)
 	case "mainnet":
 		node = fmt.Sprintf("https://api.s%d.t.hmny.io", shardID)
 	default:
