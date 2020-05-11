@@ -26,7 +26,7 @@ func CollectRewards(
 	nonce uint64,
 	keystorePassphrase string,
 	node string,
-	confirmationWaitTime int,
+	timeout int,
 ) (map[string]interface{}, error) {
 	payloadGenerator, err := createCollectRewardsTransactionGenerator(delegatorAddress)
 	if err != nil {
@@ -40,7 +40,7 @@ func CollectRewards(
 		)
 	}
 
-	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, confirmationWaitTime, payloadGenerator, logMessage)
+	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, timeout, payloadGenerator, logMessage)
 }
 
 func createCollectRewardsTransactionGenerator(delegatorAddress string) (hmyStaking.StakeMsgFulfiller, error) {

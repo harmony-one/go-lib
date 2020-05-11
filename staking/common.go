@@ -32,7 +32,7 @@ func SendTx(
 	nonce uint64,
 	keystorePassphrase string,
 	node string,
-	confirmationWaitTime int,
+	timeout int,
 	payloadGenerator hmyStaking.StakeMsgFulfiller,
 	logMessage string,
 ) (map[string]interface{}, error) {
@@ -71,9 +71,9 @@ func SendTx(
 		return nil, err
 	}
 
-	if confirmationWaitTime > 0 {
+	if timeout > 0 {
 		hash := receiptHash.(string)
-		result, _ := transactions.WaitForTxConfirmation(rpcClient, node, "staking", hash, confirmationWaitTime)
+		result, _ := transactions.WaitForTxConfirmation(rpcClient, node, "staking", hash, timeout)
 
 		if result != nil {
 			return result, nil

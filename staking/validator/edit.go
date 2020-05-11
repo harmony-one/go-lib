@@ -37,7 +37,7 @@ func Edit(
 	nonce uint64,
 	keystorePassphrase string,
 	node string,
-	confirmationWaitTime int,
+	timeout int,
 ) (map[string]interface{}, error) {
 	statusEnum := determineEposStatus(status)
 
@@ -64,7 +64,7 @@ func Edit(
 		)
 	}
 
-	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, confirmationWaitTime, payloadGenerator, logMessage)
+	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, timeout, payloadGenerator, logMessage)
 }
 
 func determineEposStatus(status string) (statusEnum effective.Eligibility) {

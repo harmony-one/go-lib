@@ -6,18 +6,18 @@ import (
 
 // Transaction - represents an executed test case transaction
 type Transaction struct {
-	FromAddress          string
-	FromShardID          uint32
-	ToAddress            string
-	ToShardID            uint32
-	Data                 string
-	Amount               numeric.Dec
-	GasPrice             int64
-	ConfirmationWaitTime int
-	TransactionHash      string
-	Success              bool
-	Response             map[string]interface{}
-	Error                error
+	FromAddress     string
+	FromShardID     uint32
+	ToAddress       string
+	ToShardID       uint32
+	Data            string
+	Amount          numeric.Dec
+	GasPrice        int64
+	Timeout         int
+	TransactionHash string
+	Success         bool
+	Response        map[string]interface{}
+	Error           error
 }
 
 // ToTransaction - converts a raw tx response map to a typed Transaction type

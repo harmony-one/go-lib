@@ -33,7 +33,7 @@ func Create(
 	nonce uint64,
 	keystorePassphrase string,
 	node string,
-	confirmationWaitTime int,
+	timeout int,
 ) (map[string]interface{}, error) {
 	payloadGenerator, err := createTransactionGenerator(validatorAddress, description, commissionRates, minimumSelfDelegation, maximumTotalDelegation, blsKeys, amount)
 	if err != nil {
@@ -59,7 +59,7 @@ func Create(
 		)
 	}
 
-	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, confirmationWaitTime, payloadGenerator, logMessage)
+	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, timeout, payloadGenerator, logMessage)
 }
 
 func createTransactionGenerator(

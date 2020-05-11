@@ -28,7 +28,7 @@ func Undelegate(
 	nonce uint64,
 	keystorePassphrase string,
 	node string,
-	confirmationWaitTime int,
+	timeout int,
 ) (map[string]interface{}, error) {
 	payloadGenerator, err := createUndelegationTransactionGenerator(delegatorAddress, validatorAddress, amount)
 	if err != nil {
@@ -44,7 +44,7 @@ func Undelegate(
 		)
 	}
 
-	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, confirmationWaitTime, payloadGenerator, logMessage)
+	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, timeout, payloadGenerator, logMessage)
 }
 
 func createUndelegationTransactionGenerator(delegatorAddress string, validatorAddress string, amount numeric.Dec) (hmyStaking.StakeMsgFulfiller, error) {

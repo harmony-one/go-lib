@@ -43,7 +43,7 @@ var (
 )
 
 // SendTransaction - send transactions
-func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, confirmationWaitTime int) (map[string]interface{}, error) {
+func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, timeout int) (map[string]interface{}, error) {
 	if keystore == nil || account == nil {
 		return nil, errors.New("keystore account can't be nil - please make sure the account you want to use exists in the keystore")
 	}
@@ -72,10 +72,10 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 	}
 
 	if network.Verbose {
-		fmt.Println(fmt.Sprintf("\n[Harmony SDK]: %s - signed transaction using chain id: %d, signature: %v", time.Now().Format(network.LoggingTimeFormat), chain.Value, signature))
+		fmt.Printf("\n[Harmony SDK]: %s - signed transaction using chain: %s (id: %d), signature: %v\n", time.Now().Format(network.LoggingTimeFormat), chain.Name, chain.Value, signature)
 		json, _ := signedTx.MarshalJSON()
-		fmt.Println(common.JSONPrettyFormat(string(json)))
-		fmt.Println("")
+		fmt.Printf("%s\n", common.JSONPrettyFormat(string(json)))
+		fmt.Printf("\n[Harmony SDK]: %s - sending transaction using node: %s, chain: %s (id: %d), signature: %v, timeout: %d\n\n", time.Now().Format(network.LoggingTimeFormat), node, chain.Name, chain.Value, signature, timeout)
 	}
 
 	receiptHash, err := SendRawTransaction(rpcClient, signature)
@@ -83,9 +83,9 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 		return nil, err
 	}
 
-	if confirmationWaitTime > 0 {
+	if timeout > 0 {
 		hash := receiptHash.(string)
-		result, err := WaitForTxConfirmation(rpcClient, node, "transaction", hash, confirmationWaitTime)
+		result, err := WaitForTxConfirmation(rpcClient, node, "transaction", hash, timeout)
 		if err != nil {
 			return nil, err
 		}
@@ -209,13 +209,13 @@ func SendRawTransaction(rpcClient *goSdkRPC.HTTPMessenger, signature *string) (i
 	return receiptHash, nil
 }
 
-// WaitForTxConfirmation - waits a given amount of seconds defined by confirmationWaitTime to try to receive a finalized transaction
-func WaitForTxConfirmation(rpcClient *goSdkRPC.HTTPMessenger, node string, txType string, receiptHash string, confirmationWaitTime int) (map[string]interface{}, error) {
+// WaitForTxConfirmation - waits a given amount of seconds defined by timeout to try to receive a finalized transaction
+func WaitForTxConfirmation(rpcClient *goSdkRPC.HTTPMessenger, node string, txType string, receiptHash string, timeout int) (map[string]interface{}, error) {
 	var failures []rpc.Failure
 
-	if confirmationWaitTime > 0 {
+	if timeout > 0 {
 		for {
-			if confirmationWaitTime < 0 {
+			if timeout < 0 {
 				return nil, nil
 			}
 
@@ -249,7 +249,7 @@ func WaitForTxConfirmation(rpcClient *goSdkRPC.HTTPMessenger, node string, txTyp
 			}
 
 			time.Sleep(time.Second * 1)
-			confirmationWaitTime = confirmationWaitTime - 1
+			timeout = timeout - 1
 		}
 	}
 
