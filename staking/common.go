@@ -16,8 +16,8 @@ import (
 	"github.com/harmony-one/go-sdk/pkg/rpc"
 	"github.com/harmony-one/harmony/accounts"
 	"github.com/harmony-one/harmony/accounts/keystore"
+	"github.com/harmony-one/harmony/crypto/bls"
 	"github.com/harmony-one/harmony/numeric"
-	"github.com/harmony-one/harmony/shard"
 	hmyStaking "github.com/harmony-one/harmony/staking/types"
 )
 
@@ -112,9 +112,9 @@ func GenerateStakingTransaction(gasLimit int64, gasPrice numeric.Dec, nonce uint
 }
 
 // ProcessBlsKeys - separate bls keys to pub key and sig slices
-func ProcessBlsKeys(blsKeys []crypto.BLSKey) (blsPubKeys []shard.BLSPublicKey, blsSigs []shard.BLSSignature) {
-	blsPubKeys = make([]shard.BLSPublicKey, len(blsKeys))
-	blsSigs = make([]shard.BLSSignature, len(blsKeys))
+func ProcessBlsKeys(blsKeys []crypto.BLSKey) (blsPubKeys []bls.SerializedPublicKey, blsSigs []bls.SerializedSignature) {
+	blsPubKeys = make([]bls.SerializedPublicKey, len(blsKeys))
+	blsSigs = make([]bls.SerializedSignature, len(blsKeys))
 
 	for i, blsKey := range blsKeys {
 		blsPubKeys[i] = *blsKey.ShardPublicKey

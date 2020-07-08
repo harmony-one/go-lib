@@ -9,22 +9,21 @@ import (
 	"errors"
 	"io"
 
-	ffiBls "github.com/harmony-one/bls/ffi/go/bls"
+	bls_core "github.com/harmony-one/bls/ffi/go/bls"
 	"github.com/harmony-one/harmony/crypto/bls"
 	"github.com/harmony-one/harmony/crypto/hash"
-	"github.com/harmony-one/harmony/shard"
 	"github.com/harmony-one/harmony/staking/types"
 )
 
 // BLSKey - represents a BLS key
 type BLSKey struct {
-	PrivateKey    *ffiBls.SecretKey
+	PrivateKey    *bls_core.SecretKey
 	PrivateKeyHex string
-	PublicKey     *ffiBls.PublicKey
+	PublicKey     *bls_core.PublicKey
 	PublicKeyHex  string
 
-	ShardPublicKey *shard.BLSPublicKey
-	ShardSignature *shard.BLSSignature
+	ShardPublicKey *bls.SerializedPublicKey
+	ShardSignature *bls.SerializedSignature
 }
 
 // GenerateBlsKey - generates a new bls key and returns its private and public keys as hex strings
@@ -65,7 +64,7 @@ func (blsKey *BLSKey) Initialize(message string) error {
 
 // AssignShardSignature - signs a given message using the BLSKey and assigns ShardSignature
 func (blsKey *BLSKey) AssignShardSignature(message string) error {
-	var sig shard.BLSSignature
+	var sig bls.SerializedSignature
 
 	if message == "" {
 		message = types.BLSVerificationStr
@@ -75,7 +74,7 @@ func (blsKey *BLSKey) AssignShardSignature(message string) error {
 	signature := blsKey.PrivateKey.SignHash(msgHash[:])
 
 	bytes := signature.Serialize()
-	if len(bytes) != shard.BLSSignatureSizeInBytes {
+	if len(bytes) != bls.BLSSignatureSizeInBytes {
 		return errors.New("bls key length is not 96 bytes")
 	}
 
@@ -87,7 +86,7 @@ func (blsKey *BLSKey) AssignShardSignature(message string) error {
 
 // AssignShardPublicKey - converts a regular pub key to a shardPubKey and assigns ShardPublicKey
 func (blsKey *BLSKey) AssignShardPublicKey() error {
-	shardPubKey := new(shard.BLSPublicKey)
+	shardPubKey := new(bls.SerializedPublicKey)
 	err := shardPubKey.FromLibBLSPublicKey(blsKey.PublicKey)
 	if err != nil {
 		return errors.New("couldn't convert bls.PublicKey -> shard.BLSPublicKey")

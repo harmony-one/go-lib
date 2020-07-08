@@ -12,8 +12,8 @@ import (
 	"github.com/harmony-one/go-sdk/pkg/rpc"
 	"github.com/harmony-one/harmony/accounts"
 	"github.com/harmony-one/harmony/accounts/keystore"
+	"github.com/harmony-one/harmony/crypto/bls"
 	"github.com/harmony-one/harmony/numeric"
-	"github.com/harmony-one/harmony/shard"
 	"github.com/harmony-one/harmony/staking/effective"
 	hmyStaking "github.com/harmony-one/harmony/staking/types"
 )
@@ -88,13 +88,13 @@ func editTransactionGenerator(
 	blsKeyToAdd *crypto.BLSKey,
 	statusEnum effective.Eligibility,
 ) (hmyStaking.StakeMsgFulfiller, error) {
-	var shardBlsKeyToRemove *shard.BLSPublicKey
+	var shardBlsKeyToRemove *bls.SerializedPublicKey
 	if blsKeyToRemove != nil {
 		shardBlsKeyToRemove = blsKeyToRemove.ShardPublicKey
 	}
 
-	var shardBlsKeyToAdd *shard.BLSPublicKey
-	var shardBlsKeyToAddSig *shard.BLSSignature
+	var shardBlsKeyToAdd *bls.SerializedPublicKey
+	var shardBlsKeyToAddSig *bls.SerializedSignature
 	if blsKeyToAdd != nil {
 		shardBlsKeyToAdd = blsKeyToAdd.ShardPublicKey
 		shardBlsKeyToAddSig = blsKeyToAdd.ShardSignature
