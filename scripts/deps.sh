@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
+declare -A repos
 
-echo "Updating dependencies"
+repos["harmony-one/bls"]="master"
+repos["harmony-one/go-sdk"]="master"
+repos["harmony-one/harmony"]="main"
 
-deps=(
-harmony-one/bls
-harmony-one/go-sdk
-harmony-one/harmony
-)
+echo "Updating dependencies..."
 
-for dep in "${deps[@]}"; do
-  commit=$(curl -Ls https://api.github.com/repos/${dep}/commits/master | jq '.sha' | tr -d '"')
-  echo "Updating dependency ${dep} to latest master commit ${commit}"
-  go get -u github.com/${dep}@${commit}
+for repo in "${!repos[@]}"; do
+  branch=${repos[$repo]}
+  commit=$(curl -Ls https://api.github.com/repos/${repo}/commits/${branch} | jq '.sha' | tr -d '"')
+  echo "Updating dependency ${repo} to latest ${branch} commit ${commit}"
+  go get -u github.com/${repo}@${commit}
 done
 
 echo "Tidying up go.mod ..."
