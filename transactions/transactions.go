@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/rlp"
+	eth_hexutil "github.com/ethereum/go-ethereum/common/hexutil"
+	eth_rlp "github.com/ethereum/go-ethereum/rlp"
 	"github.com/harmony-one/go-lib/network"
 	"github.com/harmony-one/go-lib/rpc"
 	"github.com/harmony-one/go-sdk/pkg/address"
@@ -184,14 +184,26 @@ func SignTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx 
 	return signedTransaction, nil
 }
 
-// EncodeSignature - RLP encodes a given transaction signature as a hex signature
-func EncodeSignature(tx interface{}) (*string, error) {
-	enc, err := rlp.EncodeToBytes(tx)
+// AttachSigningData - attaches the signing data to the tx - necessary for e.g. propagating txs directly via p2p
+func AttachSigningData(chainID *big.Int, tx *types.Transaction) (*types.Transaction, error) {
+	signer := types.NewEIP155Signer(chainID)
+
+	_, err := types.Sender(signer, tx)
 	if err != nil {
 		return nil, err
 	}
 
-	hexSignature := hexutil.Encode(enc)
+	return tx, nil
+}
+
+// EncodeSignature - RLP encodes a given transaction signature as a hex signature
+func EncodeSignature(tx interface{}) (*string, error) {
+	enc, err := eth_rlp.EncodeToBytes(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	hexSignature := eth_hexutil.Encode(enc)
 	signature := &hexSignature
 
 	return signature, nil
