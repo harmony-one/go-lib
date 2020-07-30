@@ -254,8 +254,8 @@ github.com/harmony-one/go-sdk v1.2.1-0.20200708192334-a30c33c1d9c1 h1:jzUxpLg2FQ
 github.com/harmony-one/go-sdk v1.2.1-0.20200708192334-a30c33c1d9c1/go.mod h1:DFtDkBhlCOINHCGln61gw4LB0nztD5LaesnLmcXiPOo=
 github.com/harmony-one/harmony v1.9.1-0.20200708165817-a168517dfc0b h1:MTfa6mi6G9owi1nVSrgQOJ7sB6+6/vW3HFusv5ymoEg=
 github.com/harmony-one/harmony v1.9.1-0.20200708165817-a168517dfc0b/go.mod h1:qPEWB0WI6vG8f6LCS97RBmc2qkFVcgbgfzhNZRYBD80=
-github.com/harmony-one/harmony v1.9.1-0.20200722170829-a354b93676e9 h1:NKu959oAcWg7da740ISuR3PhUGkXkyz7VP0t3Jhg22I=
-github.com/harmony-one/harmony v1.9.1-0.20200722170829-a354b93676e9/go.mod h1:oAbdqifA0Tr5ZsinBxGSJX5dRBRmjOl/WcuYXm9sLck=
+github.com/harmony-one/harmony v1.9.1-0.20200730064729-89ecbcbfa807 h1:QKlTfyGPqNPzk3CCtSTQs1F6LxSLXolaNNQmrW1PaFU=
+github.com/harmony-one/harmony v1.9.1-0.20200730064729-89ecbcbfa807/go.mod h1:GRwgHqb1VLn4MSPLdFK/taHQ41LFJrkwc2/izj5mKj4=
 github.com/harmony-one/taggedrlp v0.1.4 h1:RZ+qy0VCzT+d/mTfq23gH3an5tSvxOhg6AddLDO6tKw=
 github.com/harmony-one/taggedrlp v0.1.4/go.mod h1:osO5TRXLKdgCP+oj2J9qfqhywMOOA+4nP5q+o8nDSYA=
 github.com/harmony-one/vdf v0.0.0-20190924175951-620379da8849/go.mod h1:EgNU7X5HLNBBho+OqCm1A1NrpD6xb1SHfi9pMCYaKKw=
@@ -636,6 +636,11 @@ github.com/openconfig/reference v0.0.0-20190727015836-8dfd928c9696/go.mod h1:ym2
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/openzipkin/zipkin-go v0.1.1/go.mod h1:NtoC/o8u3JlF1lSlyPNswIbeQH9bJTmOf0Erfk+hxe8=
+github.com/otiai10/copy v1.2.0/go.mod h1:rrF5dJ5F0t/EWSYODDu4j9/vEeYHMkc8jt0zJChqQWw=
+github.com/otiai10/curr v0.0.0-20150429015615-9b4961190c95/go.mod h1:9qAhocn7zKJG+0mI8eUu6xqkFDYS2kb2saOteoSB3cE=
+github.com/otiai10/curr v1.0.0/go.mod h1:LskTG5wDwr8Rs+nNQ+1LlxRjAtTZZjtJW4rMXl6j4vs=
+github.com/otiai10/mint v1.3.0/go.mod h1:F5AjcsTsWUqX+Na9fpHb52P8pcRX2CI6A3ctIT91xUo=
+github.com/otiai10/mint v1.3.1/go.mod h1:/yxELlJQ0ufhjUwhshSj+wFjZ78CnZ48/1wtmBH1OTc=
 github.com/pborman/uuid v1.2.0 h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=
 github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
