@@ -11,5 +11,5 @@ func GetCurrentEpoch(node string) (uint32, error){
 	if err != nil {
 		return 0, err
 	}
-	return blockReply["result"].(map[string]interface{})["epoch"].(uint32), nil
+	return uint32(blockReply["result"].(map[string]interface{})["epoch"].(float64)), nil
 }
