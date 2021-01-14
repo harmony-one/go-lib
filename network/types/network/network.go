@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/harmony-one/go-lib/network/rpc/balances"
+	"github.com/harmony-one/go-lib/network/rpc/block"
 	commonRPC "github.com/harmony-one/go-lib/network/rpc/common"
 	"github.com/harmony-one/go-lib/network/rpc/nonces"
 	commonTypes "github.com/harmony-one/go-lib/network/types/common"
@@ -113,6 +114,12 @@ func (network *Network) SetShardingStructure(shardingStructure []goSDK_sharding.
 	if network.ShardingStructure == nil && len(network.ShardingStructure) == 0 && len(shardingStructure) > 0 {
 		network.ShardingStructure = shardingStructure
 	}
+}
+
+// GetCurrentEpoch - returns current epoch
+func (network *Network) CurrentEpoch(shardID uint32) (uint32, error) {
+	node := network.ShardingStructure[shardID].HTTP
+	return block.GetCurrentEpoch(node)
 }
 
 // RPCClient - resolve the RPC/HTTP Messenger to use for remote commands
