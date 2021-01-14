@@ -5,7 +5,7 @@ import (
 )
 
 // GetCurrentEpoch - returns the block header current epoch
-func GetCurrentEpoch(node string) (uint32, error){
+func GetCurrentEpoch(node string) (uint32, error) {
 	params := []interface{}{}
 	blockReply, err := rpc.Request(rpc.Method.GetLatestBlockHeader, node, params)
 	if err != nil {
