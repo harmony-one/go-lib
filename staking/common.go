@@ -6,10 +6,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/harmony-one/go-lib/crypto"
+	libErrors "github.com/harmony-one/go-lib/errors"
 	"github.com/harmony-one/go-lib/network"
 	"github.com/harmony-one/go-lib/transactions"
 	"github.com/harmony-one/go-sdk/pkg/common"
@@ -37,7 +36,7 @@ func SendTx(
 	logMessage string,
 ) (map[string]interface{}, error) {
 	if keystore == nil || account == nil {
-		return nil, errors.New("keystore account can't be nil - please make sure the account you want to use exists in the keystore")
+		return nil, libErrors.ErrMissingAccount
 	}
 	stakingTx, calculatedGasLimit, err := GenerateStakingTransaction(gasLimit, gasPrice, nonce, payloadGenerator)
 	if err != nil {

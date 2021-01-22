@@ -10,6 +10,7 @@ import (
 
 	eth_hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	eth_rlp "github.com/ethereum/go-ethereum/rlp"
+	libErrors "github.com/harmony-one/go-lib/errors"
 	"github.com/harmony-one/go-lib/network"
 	"github.com/harmony-one/go-lib/rpc"
 	"github.com/harmony-one/go-sdk/pkg/address"
@@ -45,7 +46,7 @@ var (
 // SendTransaction - send transactions
 func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, timeout int) (map[string]interface{}, error) {
 	if keystore == nil || account == nil {
-		return nil, errors.New("keystore account can't be nil - please make sure the account you want to use exists in the keystore")
+		return nil, libErrors.ErrMissingAccount
 	}
 
 	signedTx, err := GenerateAndSignTransaction(
