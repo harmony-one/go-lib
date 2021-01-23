@@ -9,8 +9,8 @@ require (
 	github.com/deckarep/golang-set v1.7.1
 	github.com/ethereum/go-ethereum v1.9.23
 	github.com/harmony-one/bls v0.0.7-0.20191214005344-88c23f91a8a9
-	github.com/harmony-one/go-sdk v1.2.2-0.20210122163308-8bcfe99f406b
-	github.com/harmony-one/harmony v1.10.2-0.20210122034820-6112100ef5a1
+	github.com/harmony-one/go-sdk v1.2.2-0.20210123151345-d4635a829001
+	github.com/harmony-one/harmony v1.10.2-0.20210123081216-6993b9ad0ca1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 )

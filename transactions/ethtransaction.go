@@ -17,20 +17,18 @@ import (
 	"github.com/harmony-one/harmony/numeric"
 )
 
-// SendTransaction - send transactions
-func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, fromShardID uint32, toAddress string, toShardID uint32, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, timeout int) (map[string]interface{}, error) {
+// SendEthTransaction - send eth transactions
+func SendEthTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpcClient *goSdkRPC.HTTPMessenger, chain *common.ChainID, fromAddress string, toAddress string, amount numeric.Dec, gasLimit int64, gasPrice numeric.Dec, nonce uint64, inputData string, keystorePassphrase string, node string, timeout int) (map[string]interface{}, error) {
 	if keystore == nil || account == nil {
 		return nil, libErrors.ErrMissingAccount
 	}
 
-	signedTx, err := GenerateAndSignTransaction(
+	signedTx, err := GenerateAndSignEthTransaction(
 		keystore,
 		account,
 		chain,
 		fromAddress,
-		fromShardID,
 		toAddress,
-		toShardID,
 		amount,
 		gasLimit,
 		gasPrice,
@@ -76,27 +74,25 @@ func SendTransaction(keystore *keystore.KeyStore, account *accounts.Account, rpc
 	return result, nil
 }
 
-// GenerateAndSignTransaction - generates and signs a transaction based on the supplied tx params and keystore/account
-func GenerateAndSignTransaction(
+// GenerateAndSignEthTransaction - generates and signs a transaction based on the supplied tx params and keystore/account
+func GenerateAndSignEthTransaction(
 	keystore *keystore.KeyStore,
 	account *accounts.Account,
 	chain *common.ChainID,
 	fromAddress string,
-	fromShardID uint32,
 	toAddress string,
-	toShardID uint32,
 	amount numeric.Dec,
 	gasLimit int64,
 	gasPrice numeric.Dec,
 	nonce uint64,
 	inputData string,
-) (tx *types.Transaction, err error) {
-	generatedTx, err := GenerateTransaction(fromAddress, fromShardID, toAddress, toShardID, amount, gasLimit, gasPrice, nonce, inputData)
+) (tx *types.EthTransaction, err error) {
+	generatedTx, err := GenerateEthTransaction(fromAddress, toAddress, amount, gasLimit, gasPrice, nonce, inputData)
 	if err != nil {
 		return nil, err
 	}
 
-	tx, err = SignTransaction(keystore, account, generatedTx, chain.Value)
+	tx, err = SignEthTransaction(keystore, account, generatedTx, chain.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -104,29 +100,25 @@ func GenerateAndSignTransaction(
 	return tx, nil
 }
 
-// GenerateTransaction - generate a new transaction
-func GenerateTransaction(
+// GenerateEthTransaction - generate a new transaction
+func GenerateEthTransaction(
 	fromAddress string,
-	fromShardID uint32,
 	toAddress string,
-	toShardID uint32,
 	amount numeric.Dec,
 	gasLimit int64,
 	gasPrice numeric.Dec,
 	nonce uint64,
 	inputData string,
-) (tx *types.Transaction, err error) {
+) (tx *types.EthTransaction, err error) {
 	calculatedGasLimit, err := CalculateGasLimit(gasLimit, inputData, false)
 	if err != nil {
 		return nil, err
 	}
 
 	if network.Verbose {
-		fmt.Println(fmt.Sprintf("\n[Harmony SDK]: %s - Generating a new transaction:\n\tReceiver address: %s\n\tFrom shard: %d\n\tTo shard: %d\n\tAmount: %f\n\tNonce: %d\n\tGas limit: %d\n\tGas price: %f\n\tData length (bytes): %d\n",
+		fmt.Println(fmt.Sprintf("\n[Harmony SDK]: %s - Generating a new transaction:\n\tReceiver address: %s\n\tAmount: %f\n\tNonce: %d\n\tGas limit: %d\n\tGas price: %f\n\tData length (bytes): %d\n",
 			time.Now().Format(network.LoggingTimeFormat),
 			toAddress,
-			fromShardID,
-			toShardID,
 			amount,
 			nonce,
 			calculatedGasLimit,
@@ -135,12 +127,10 @@ func GenerateTransaction(
 		)
 	}
 
-	tx = transaction.NewTransaction(
+	tx = transaction.NewEthTransaction(
 		nonce,
 		calculatedGasLimit,
 		address.Parse(toAddress),
-		fromShardID,
-		toShardID,
 		amount.Mul(OneAsDec),
 		gasPrice.Mul(NanoAsDec),
 		[]byte(inputData),
@@ -149,9 +139,9 @@ func GenerateTransaction(
 	return tx, nil
 }
 
-// SignTransaction - signs a transaction using a given keystore / account
-func SignTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx *types.Transaction, chainID *big.Int) (*types.Transaction, error) {
-	signedTransaction, err := keystore.SignTx(*account, tx, chainID)
+// SignEthTransaction - signs a transaction using a given keystore / account
+func SignEthTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx *types.EthTransaction, chainID *big.Int) (*types.EthTransaction, error) {
+	signedTransaction, err := keystore.SignEthTx(*account, tx, chainID)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +149,8 @@ func SignTransaction(keystore *keystore.KeyStore, account *accounts.Account, tx 
 	return signedTransaction, nil
 }
 
-// AttachSigningData - attaches the signing data to the tx - necessary for e.g. propagating txs directly via p2p
-func AttachSigningData(chainID *big.Int, tx *types.Transaction) (*types.Transaction, error) {
+// AttachEthSigningData - attaches the signing data to the tx - necessary for e.g. propagating txs directly via p2p
+func AttachEthSigningData(chainID *big.Int, tx *types.EthTransaction) (*types.EthTransaction, error) {
 	signer := types.NewEIP155Signer(chainID)
 
 	_, err := types.Sender(signer, tx)
