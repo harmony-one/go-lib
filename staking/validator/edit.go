@@ -119,3 +119,47 @@ func editTransactionGenerator(
 
 	return payloadGenerator, nil
 }
+
+// EditStatus - edits the validator status for an existing validator
+func EditStatus(
+	keystore *keystore.KeyStore,
+	account *accounts.Account,
+	rpcClient *rpc.HTTPMessenger,
+	chain *common.ChainID,
+	validatorAddress string,
+	status string,
+	gasLimit int64,
+	gasPrice numeric.Dec,
+	nonce uint64,
+	keystorePassphrase string,
+	node string,
+	timeout int,
+) (map[string]interface{}, error) {
+	statusEnum := determineEposStatus(status)
+
+	payloadGenerator := editValidatorStatusGenerator(validatorAddress, statusEnum)
+
+	var logMessage string
+	if network.Verbose {
+		logMessage = fmt.Sprintf("Generating a new edit validator status transaction:\n\tValidator Address: %s\n\tStatus: %v",
+			validatorAddress,
+			statusEnum,
+		)
+	}
+
+	return staking.SendTx(keystore, account, rpcClient, chain, gasLimit, gasPrice, nonce, keystorePassphrase, node, timeout, payloadGenerator, logMessage)
+}
+
+func editValidatorStatusGenerator(
+	validatorAddress string,
+	statusEnum effective.Eligibility,
+) hmyStaking.StakeMsgFulfiller {
+	payloadGenerator := func() (hmyStaking.Directive, interface{}) {
+		return hmyStaking.DirectiveEditValidator, hmyStaking.EditValidator{
+			ValidatorAddress: address.Parse(validatorAddress),
+			EPOSStatus:       statusEnum,
+		}
+	}
+
+	return payloadGenerator
+}
